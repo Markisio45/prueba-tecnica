@@ -6,6 +6,14 @@ Este repositorio contiene la solución a una prueba técnica realizada como part
 
 El objetivo de este proyecto es demostrar habilidades técnicas y buenas prácticas de desarrollo según los requerimientos especificados en la oferta laboral.
 
+## Video Demostración
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/mheMl_pmpI4?si=T3U3uuyeeeAnKZvl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Enlace youtube:
+
+https://www.youtube.com/watch?v=mheMl_pmpI4
+
 ## Tarea 1: Extensión del Modelo de Producto
 
 En esta tarea se ha extendido el Modelo de Producto base que incluye Medusa.

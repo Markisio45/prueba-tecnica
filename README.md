@@ -255,3 +255,69 @@ info:    Processing product.custom_changed which has 1 subscribers
 http:    POST /admin/custom/01K5JA4FB23ZFDRHS74QSQWM96 ← http://localhost:9000/app/products/prod_01K5JA4F91GA9GA5R6FKYY2765 (200) - 3.112 ms
 [SUBSCRIBER]The custom 01K5JA4FB23ZFDRHS74QSQWM96 was modified!
 ```
+
+## Tarea 4 - Visualización en Storefront
+
+En esta última tarea tendremos que indicar de forma visual las opciones de customización que se han habilitado anteriormente.
+
+Lo primero que tenemos que hacer es obtener el campo `custom` en nuestra llamada al backend. Para ello lo único que tenemos que hacer es modificar la llamada `fetch` que realizamos, y añadir el campo que queremos recuperar:
+
+```ts
+.fetch<{ products: HttpTypes.StoreProduct[]; count: number }>(
+  `/store/products`,
+  {
+    method: "GET",
+    query: {
+      limit,
+      offset,
+      region_id: region?.id,
+      fields:
+        "*variants.calculated_price,+variants.inventory_quantity,+metadata,+tags,+custom.*", // <-- Campo custom Añadido
+      ...queryParams,
+    },
+    headers,
+    next,
+    cache: "force-cache",
+  }
+)
+```
+
+Ahora también sería necesario mostrar las notas dentro de la vista detallada del producto. Para ello creamos un nuevo componente. El cual comprobará si el producto tiene el flag de `is_custom` activado, y si es así dibujará el componente, si no, no.
+```ts
+// mi-prueba-tecnica-storefront/src/modules/products/components/product-custom/index.tsx
+"use client";
+
+type ProductCustomProps = {
+  custom: {
+    is_custom: boolean
+    custom_notes?: string
+    [key: string]: any
+  } | null
+}
+
+export default function ProductCustom({ custom }: ProductCustomProps) {
+  if (!custom?.is_custom) {
+    return null
+  }
+
+  return (
+    <div className="border border-gray-300 rounded-md p-4 mt-4">
+      <h2 className="text-lg font-semibold mb-2">Custom Product Details</h2>
+      <p>{custom.custom_notes || "N/A"}</p>
+    </div>
+  )
+}
+```
+
+Finalmente, para indicar desde la vista del listado de productos si el producto es custom añadiremos un indicador. Para ello modificaremos el componente `product-preview` y añadiremos lo siguiente:
+
+```tsx
+{product.custom?.is_custom && (
+  <div className="absolute top-2 left-2 bg-ui-primary text-ui-primary-inverse w-6 h-6 rounded-full flex items-center justify-center text-xs z-10 bg-red-500 " />
+)}
+```
+
+Los resultados son los siguientes:
+
+![Detalles](/images//tarea4-detalles.png)
+![Lista](/images//tarea4-lista.png)

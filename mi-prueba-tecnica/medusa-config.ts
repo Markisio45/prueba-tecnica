@@ -16,6 +16,9 @@ module.exports = defineConfig({
   modules: [
     {
       resolve: "./src/modules/custom",
-    }
+    },
+    {
+      resolve: "@medusajs/medusa/event-bus-local",
+    },
   ]
 })

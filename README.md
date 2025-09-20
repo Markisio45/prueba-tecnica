@@ -185,3 +185,73 @@ class CustomModuleService extends MedusaService({
   }
 }
 ```
+
+## Tarea 3. Sistema de Eventos y Subscriber
+
+En esta tarea realizaremos un sitema que reaccione a los cambios realizados en los campos personalizados.
+
+Lo primero que necesitamos hacer es crear nuesto Subscriber.
+
+```ts
+// mi-prueba-tecnica/src/subscribers/custom-changed.ts
+import {
+  type SubscriberConfig, type SubscriberArgs
+} from "@medusajs/framework"
+
+// subscriber function
+export default async function customChangedHandler({
+  event: { data },
+  container,
+}: SubscriberArgs<{ id: string }>) {
+  console.log("[SUBSCRIBER] A product's custom data was changed")
+  const productId = data.id
+
+  const customModuleService = container.resolve("custom")
+
+  const custom = await customModuleService.retrieveCustom(productId)
+
+  console.log(`[SUBSCRIBER]The custom ${custom.id} was modified!`)
+}
+
+// subscriber config
+export const config: SubscriberConfig = {
+  event: "product.custom_changed",
+}
+```
+
+Y realizaremos la llamada al disparador desde el `service` de nuestro custom. En él, añadiremos la función `emit()` que se encargará de disparar los eventos que recogerá el subscriber:
+
+```ts
+// mi-prueba-tecnica/src/modules/custom/service.ts
+async emit<T>(data: Message<T> | Message<T>[], options: Record<string, unknown>): Promise<void> {
+    const events = Array.isArray(data) ? data : [data]
+
+    for (const event of events) {
+      console.log(`[Service Custom]Received the event ${event.name} with data ${event.data}`)
+
+      if (event.metadata?.eventGroupId) {
+        const groupedEvents = this.groupedEventsMap_.get(
+          event.metadata.eventGroupId
+        ) || []
+
+        groupedEvents.push(event)
+
+        this.groupedEventsMap_.set(event.metadata.eventGroupId, groupedEvents)
+        continue
+      }
+
+
+      await this.eventBusService_.emit(event, options)
+    }
+  }
+```
+
+Finalmente modificamos un custom y observamos por consola si el evento ha sido recibido por el subscriber:
+
+```bash
+[Service Custom]Received the event product.custom_changed with data [object Object]
+info:    Processing product.custom_changed which has 1 subscribers
+[SUBSCRIBER] A product's custom data was changed
+http:    POST /admin/custom/01K5JA4FB23ZFDRHS74QSQWM96 ← http://localhost:9000/app/products/prod_01K5JA4F91GA9GA5R6FKYY2765 (200) - 3.112 ms
+[SUBSCRIBER]The custom 01K5JA4FB23ZFDRHS74QSQWM96 was modified!
+```
